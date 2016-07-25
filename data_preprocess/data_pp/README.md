@@ -1,6 +1,6 @@
 # Data Pre-Process
  
-1. Create name list file
+### 1. Create name list file
 Make sure the directory only contains pcd files (remove all backup hidden files)
 ```shell
 $ roscd data_pp
@@ -10,14 +10,14 @@ $ ./list_names.py
 ```
 Then a file named 'name_list' is created under the directory where the pcd files reside.
     
-2. Get depth images
+### 2. Get depth images
 Change to the directory where pcd files reside.
 ```shell
 $ rosrun data_pp data_pp
 ```
 Then it will generate depth images in the directory where the pcd files reside. Users need to create a new folder and copy all bmp images into new folder.
 
-3. Label the images
+### 3. Label the images
 Make sure the diretory only contains bmp files (also remove all backup hidden files)
 ```shell
 $ sudo apt-get install imagemagick
@@ -39,7 +39,7 @@ Then a file named 'depth_data' is created under the directory where the bmp file
 'dictionary' contains the dictionary that maps label to label value.
 
 The method of reading the file:
-'''change to the directory where 'depth_data' resides'''
+'''schange to the directory where 'depth_data' resides'''
 ```python3
 from six.moves import cPickle as pickle
 file_name = 'depth_data'
