@@ -1,0 +1,10 @@
+*~
+
+#python
+**/*.py~
+
+#IPython
+**/.ipynb_checkpoints
+
+#ROS
+**/*.cpp~
