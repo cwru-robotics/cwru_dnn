@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 '''
 Zhiang Chen
-July,2016
+Aug,2016
 '''
 
 "Label the depth images, and store them as the format of 3D volume, which is consistent with the input of convnet"
@@ -14,10 +14,12 @@ from six.moves import cPickle as pickle
 
 pixel_depth = 225.0
 image_size = 80
-num_image = 0
+index_image = 0
+num_shift = 3  #3x3
+stride_shift = 5
 
-lf_x = 30
-lf_y = 120
+lf_x = 15
+lf_y = 105
 rt_x = lf_x + image_size
 rt_y = lf_y + image_size
 
@@ -34,7 +36,7 @@ if cmd == "no":
 	wd = input()
 	assert os.path.isdir(wd)
 
-input("Before labeling, make sure there is no subdirectories in this folder!\nPress Enter to continue")
+input("Before labeling, make sure there are no subdirectories in this folder!\nPress Enter to continue")
 
 files = os.listdir(wd)
 
@@ -48,49 +50,33 @@ for name in files:
 	else:
 		num_images += 1
 print("There are %d images to label" %num_images)
-dataset = np.ndarray(shape=(num_images, image_size, image_size),dtype=np.float32)
-labelset = np.ndarray(shape=(num_images, 1),dtype=np.float32)
+
 
 for name in files:
-	print("--------------------------------")
 	debris = name.split('.')
 	if debris[-1] != 'bmp':
 		continue
 	elif name.startswith('cropped'):
 		continue
 	else:
+		print("--------------------------------")
 		image_file = os.path.join(wd, name)
-		img0 = Image.open(image_file)
-		img = img0.crop((lf_x,lf_y,rt_x,rt_y))
+		org_img = Image.open(image_file)
+		img = org_img.crop((lf_x, lf_y, rt_x, rt_y))
 		img.show()
-		img.save(wd+"/cropped_"+name)
-		image_file = os.path.join(wd, "cropped_"+name)
-
-		image_data = (ndimage.imread(image_file).astype(float) - pixel_depth / 2) / pixel_depth
-		if image_data.shape != (image_size, image_size):
-			raise Exception('Unexpected image shape: %s' % str(image_data.shape))
 		print("The file name: "+name)
-		label = input("Input the label of the image: ")
-		if label in labels:
-			label_num = labels[label]
-		else:
-			label_num += 1
-			labels.setdefault(label,label_num)
-		dataset[num_image,:,:] = image_data
-		labelset[num_image,:]=label_num
-		num_image += 1
+		name = input("Input the name of the object: ")
+		face = input("Input the face: ")
+		orientation = input("Input the orientation: ")
+		
+		for i in range(num_shift):
+			for j in range(num_shift):
+				index = 3*j+i
+				# crop image
+				img = org_img.crop((lf_x + i*stride_shift, lf_y + j*stride_shift,
+					rt_x + i*stride_shift,rt_y + j*stride_shift))
+				cropped_name = wd+"/cropped_"+name +'_f'+str(face)+'_r'+str(orientation)+'_'+str(index)+'.bmp'
+				img.save(cropped_name)
 
 
-print(dataset.shape)
-print(labelset.shape)
 
-data_file = wd + '/depth_data'
-with open(data_file,'wb') as f:
-	save={
-		'dataset': dataset,
-		'labelset':labelset
-	}
-	pickle.dump(save,f,pickle.HIGHEST_PROTOCOL)
-	f.close()
-statinfo = os.stat(data_file)
-print('Compressed data size:', statinfo.st_size)
