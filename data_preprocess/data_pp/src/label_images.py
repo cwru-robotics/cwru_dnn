@@ -13,13 +13,13 @@ from scipy import ndimage
 from six.moves import cPickle as pickle
 
 pixel_depth = 225.0
-image_size = 80
+image_size = 34
 index_image = 0
 num_shift = 3  #3x3
-stride_shift = 5
+stride_shift = 1
 
-lf_x = 15
-lf_y = 105
+lf_x = 16
+lf_y = 72
 rt_x = lf_x + image_size
 rt_y = lf_y + image_size
 
