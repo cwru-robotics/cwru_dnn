@@ -16,14 +16,18 @@ if cmd == "no":
 	wd = input()
 	assert os.path.isdir(wd)
 
-size = os.path.getsize(wd)
 files = os.listdir(wd)
+images = list()
+for name in files:
+	debris = name.split('.')
+	if debris[-1] == 'pcd':
+		images.append(name)
+
 file_name = wd+"/name_lists"
 fo = open(file_name,'w')
-file = ' '.join(files)
+file = ' '.join(images)
 fo.write(file)
 fo.close()
 print("Saved!")
-print("The size of images is " + str(size/1024/1024) + "MB")
-print("The number of images is "+str(len(files)))
-print("The size of the saved file is "+ str(os.path.getsize(file_name)/1024/1024) + "MB")
+print("The number of images is "+str(len(images)))
+print("The size of the saved file is %0.2fkB" % float(os.path.getsize(file_name)/1024))

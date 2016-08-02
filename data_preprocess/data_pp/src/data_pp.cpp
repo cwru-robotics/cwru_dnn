@@ -7,7 +7,7 @@
 #include <math.h>
 #include <sensor_msgs/PointCloud2.h> 
 #include <pcl_ros/point_cloud.h> 
-#include <pcl/ros/conversions.h>
+#include <pcl/conversions.h>
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <pcl/common/common_headers.h>
@@ -41,20 +41,20 @@ using namespace std;
 #define cY 0.109414
 #define cZ 0.863329
 // Box Filter Parameters
-#define bnX 0.03
-#define bnY -0.1
-#define bnZ -0.001
-#define bmX 0.15
-#define bmY 0.07
+#define bnX 0.013
+#define bnY -0.11
+#define bnZ -0.015
+#define bmX 0.185
+#define bmY 0.08
 #define bmZ 0.1
 // Projection Parameters
-#define mDis 0.95  // darkest, float!
-#define nDis 0.8 // brightest, float!
-#define Nv 200
-#define Nu 200
-#define focal_len 500.0 //220.0 may be good? float!
+#define mDis 0.915  // darkest, float!
+#define nDis 0.78 // brightest, float!
+#define Nv 120
+#define Nu 120
+#define focal_len 200.0 //220.0 may be good? float!
 /*************************************/
-
+// 500x250x250
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "data_pp"); //node name
@@ -121,6 +121,7 @@ int main(int argc, char** argv) {
     	{
     		names.push_back(name);
     	}
+    	cout<<name<<endl;
     }
 
 // get depth images
