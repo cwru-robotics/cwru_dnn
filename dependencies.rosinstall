@@ -10,3 +10,6 @@
 - git:
     local-name: catkin_simple
     uri: https://github.com/catkin/catkin_simple.git
+- git:
+    local-name: cwru_pcl_utils
+    uri: https://github.com/cwru-robotics/cwru_pcl.git
