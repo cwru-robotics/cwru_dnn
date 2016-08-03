@@ -15,19 +15,18 @@
 #include <pcl-1.7/pcl/PCLHeader.h>
 #include <pcl/filters/passthrough.h>
 #include <pcl/filters/voxel_grid.h> 
-#include <pcl_utils/pcl_utils.h>  
+#include <cwru_pcl_utils/cwru_pcl_utils.h>  
 #include <iostream>
 #include <fstream>
+#include <vector>
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-void box_filter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr  inputCloud, Eigen::Vector3f pt_min, Eigen::Vector3f pt_max, vector<int> &indices);
-void projection_method1(pcl::PointCloud<pcl::PointXYZRGB>::Ptr  box_ptr, int npts_cloud, string fname);
-void projection_method2(pcl::PointCloud<pcl::PointXYZRGB>::Ptr  box_ptr, int npts_cloud, string fname, double resolution);
-
-using namespace std;
+void box_filter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr  inputCloud, Eigen::Vector3f pt_min, Eigen::Vector3f pt_max, std::vector<int> &indices);
+void projection_method1(pcl::PointCloud<pcl::PointXYZRGB>::Ptr  box_ptr, int npts_cloud, std::string fname);
+void projection_method2(pcl::PointCloud<pcl::PointXYZRGB>::Ptr  box_ptr, int npts_cloud, std::string fname, double resolution);
 
 //#define DISPLAY
 
@@ -59,7 +58,7 @@ using namespace std;
 int main(int argc, char** argv) {
     ros::init(argc, argv, "data_pp"); //node name
     ros::NodeHandle nh;
-    PclUtils pclUtils(&nh);
+    CwruPclUtils CwruPclUtils(&nh);
 
 // publishers
     ros::Publisher pub_kinect = nh.advertise<sensor_msgs::PointCloud2> ("/kinect", 1);
@@ -88,7 +87,7 @@ int main(int argc, char** argv) {
     plane_parameters<<A, B, C, D;
     plane_centroid3f<<cX, cY, cZ;
     
-    A_plane_wrt_camera = pclUtils.make_affine_from_plane_params(plane_parameters,plane_centroid3f);
+    A_plane_wrt_camera = CwruPclUtils.make_affine_from_plane_params(plane_parameters,plane_centroid3f);
 
 // Image projection variables
 	Eigen::Vector3f cloud_pt;
@@ -103,30 +102,30 @@ int main(int argc, char** argv) {
   	cv::Mat image(Nu,Nv,CV_8U,cv::Scalar(0));
 
 // read the list of names
-    ifstream file;
+    std::fstream file;  // changed this to an fstream to test - luc
     file.open("name_lists");
-    string name;
+    std::string name;
     if (!file.is_open())
     {
     	ROS_ERROR("WRONG DIRECTORY! FAILED TO FIND THE FILE!!");
     	return -1;
     }
-    vector<string> names;
+    std::vector<std::string> names;
     names.clear();
     while (!file.eof()) 
     {
     	// load file
     	file >> name;
-    	if (name!="name_lists")
+    	if (name.compare("name_lists") != 0)
     	{
     		names.push_back(name);
     	}
     	cout<<name<<endl;
     }
 
-// get depth images
-    string fname; // image's name
-    vector<int> indices; // indices of interesting pixels
+    // get depth images
+    std::string fname; // image's name
+    std::vector<int> indices; // indices of interesting pixels
     int num = names.size(); // the number of images 
     ROS_INFO("There are %d images in total.", num);
     // parameters for box filter wrt plane coords
@@ -143,7 +142,7 @@ int main(int argc, char** argv) {
         	ROS_ERROR("Couldn't read file \n");
         	return -1;
     	}
-    	cout<<"............................................................."<<endl;
+    	std::cout<<"............................................................."<<std::endl;
     	ROS_INFO_STREAM("Projecting file: "<<fname);
     	// transform to plane coords
     	pcl::transformPointCloud(*kinect_ptr, *tf_kinect_ptr, A_plane_wrt_camera.inverse());
@@ -154,7 +153,7 @@ int main(int argc, char** argv) {
 
     	int npts_cloud = indices.size();
     	projection_method1(box_ptr, npts_cloud, fname);
-    	cout<<"Finished "<<std::fixed<<std::setprecision(1)<< double(ipic+1)/num*100 <<"%"<<endl;
+    	std::cout<<"Finished "<<std::fixed<<std::setprecision(1)<< double(ipic+1)/num*100 <<"%"<<std::endl;
 
 #ifdef DISPLAY
     	pcl::toROSMsg(*tf_kinect_ptr, ros_tf_kinect);
@@ -181,13 +180,13 @@ int main(int argc, char** argv) {
 }
 
 void box_filter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr  inputCloud, Eigen::Vector3f pt_min, Eigen::Vector3f pt_max, 
-                vector<int> &indices)  {
+                std::vector<int> &indices)  {
     int npts = inputCloud->points.size();
     Eigen::Vector3f pt;
     indices.clear();
     for (int i = 0; i < npts; ++i) {
         pt = inputCloud->points[i].getVector3fMap();
-        //cout<<"pt: "<<pt.transpose()<<endl;
+        //std::cout<<"pt: "<<pt.transpose()<<std::endl;
         //check if in the box:
         if ((pt[0]>pt_min[0])&&(pt[0]<pt_max[0])&&(pt[1]>pt_min[1])&&(pt[1]<pt_max[1])&&(pt[2]>pt_min[2])&&(pt[2]<pt_max[2])) { 
             //passed box-crop test; include this point
@@ -195,11 +194,11 @@ void box_filter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr  inputCloud, Eigen::Vecto
         }
     }
     int n_extracted = indices.size();
-    cout << " number of points within box = " << n_extracted << endl;    
+    std::cout << " number of points within box = " << n_extracted << std::endl;    
     
 }
 
-void projection_method1(pcl::PointCloud<pcl::PointXYZRGB>::Ptr  box_ptr, int npts_cloud, string fname)
+void projection_method1(pcl::PointCloud<pcl::PointXYZRGB>::Ptr  box_ptr, int npts_cloud, std::string fname)
 {
 	Eigen::Vector3f cloud_pt;
     double x,y,z;
@@ -242,7 +241,7 @@ void projection_method1(pcl::PointCloud<pcl::PointXYZRGB>::Ptr  box_ptr, int npt
 
 	// save image
 	size_t lastindex = fname.find_last_of("."); 
-	string newname = fname.substr(0, lastindex); 
+	std::string newname = fname.substr(0, lastindex); 
 	newname += ".bmp";
 	cv::imwrite(newname, image);  
 	ROS_INFO_STREAM("Saved file: "<<newname);
@@ -250,5 +249,5 @@ void projection_method1(pcl::PointCloud<pcl::PointXYZRGB>::Ptr  box_ptr, int npt
 }
 
 /*
-void projection_method2(pcl::PointCloud<pcl::PointXYZRGB>::Ptr  box_ptr, int npts_cloud, string fname, double resolution)
+void projection_method2(pcl::PointCloud<pcl::PointXYZRGB>::Ptr  box_ptr, int npts_cloud, std::string fname, double resolution)
 */
