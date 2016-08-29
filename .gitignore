@@ -1,10 +1,20 @@
 *~
-
-#python
-**/*.py~
+.ipynb_checkpoints
 
 #IPython
 **/.ipynb_checkpoints
 
-#ROS
+#python
+**/*.py~
+
+#cpp
 **/*.cpp~
+
+#Udacity
+Tutorials/Udacity/notMNIST*
+
+#PCD files
+images/pcd
+
+#Tensorflow
+**/*.ckpt.meta
